@@ -1,185 +1,132 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>GoldGram</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background: #fff;
-            width: 450px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        #login {
-            padding: 30px;
-            text-align: center;
-            background: #4CAF50;
-            color: white;
-        }
-
-        #login input {
-            padding: 10px;
-            width: 70%;
-            border-radius: 5px;
-            border: none;
-            margin-right: 5px;
-        }
-
-        #login button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            background: #fff;
-            color: #4CAF50;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        #chatContainer {
-            display: none;
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-        }
-
-        #chat {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #f9f9f9;
-        }
-
-        #chat div {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 15px;
-            max-width: 70%;
-        }
-
-        .me {
-            background: #DCF8C6;
-            margin-left: auto;
-        }
-
-        .other {
-            background: #fff;
-            margin-right: auto;
-        }
-
-        #inputArea {
-            display: flex;
-            padding: 10px;
-            background: #eee;
-        }
-
-        #message {
-            flex: 1;
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            outline: none;
-        }
-
-        #send {
-            padding: 10px 20px;
-            margin-left: 10px;
-            border-radius: 20px;
-            border: none;
-            background: #4CAF50;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Онлайн Мессенджер</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: 50px;
+    }
+    .container {
+        width: 450px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        overflow: hidden;
+        padding: 20px;
+    }
+    #chat { 
+        height: 300px; 
+        overflow-y: auto; 
+        border: 1px solid #ccc; 
+        padding: 10px; 
+        margin-bottom: 10px;
+        background: #f9f9f9;
+    }
+    #chat div { 
+        margin-bottom: 8px; 
+        padding: 8px 12px; 
+        border-radius: 15px; 
+        max-width: 70%;
+    }
+    .me { background: #DCF8C6; margin-left: auto; }
+    .other { background: #fff; margin-right: auto; }
+    #inputArea { display: flex; }
+    #message { flex:1; padding:10px; border-radius:20px; border:1px solid #ccc; outline:none; }
+    #send { padding:10px 20px; margin-left:10px; border-radius:20px; border:none; background:#4CAF50; color:white; cursor:pointer; font-weight:bold; }
+    #username { padding:8px; width: 70%; border-radius:5px; border:1px solid #ccc; margin-right:5px; }
+    #loginBtn { padding:8px 15px; border:none; border-radius:5px; background:#4CAF50; color:white; font-weight:bold; cursor:pointer; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div id="login">
-            <h2>Войти в чат</h2>
-            <input type="text" id="username" placeholder="Введите имя">
-            <button id="loginBtn">Войти</button>
-        </div>
 
-        <div id="chatContainer">
-            <div id="chat"></div>
-            <div id="inputArea">
-                <input type="text" id="message" placeholder="Введите сообщение">
-                <button id="send">Отправить</button>
-            </div>
-        </div>
+<div class="container">
+    <div id="login">
+        <h2>Войти в чат</h2>
+        <input type="text" id="username" placeholder="Введите имя">
+        <button id="loginBtn">Войти</button>
     </div>
 
-    <script>
-        const loginDiv = document.getElementById('login');
-        const loginBtn = document.getElementById('loginBtn');
-        const usernameInput = document.getElementById('username');
+    <div id="chatContainer" style="display:none;">
+        <div id="chat"></div>
+        <div id="inputArea">
+            <input type="text" id="message" placeholder="Введите сообщение">
+            <button id="send">Отправить</button>
+        </div>
+    </div>
+</div>
 
-        const chatContainer = document.getElementById('chatContainer');
-        const chat = document.getElementById('chat');
-        const messageInput = document.getElementById('message');
-        const sendBtn = document.getElementById('send');
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+    // Конфигурация Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyB3e0tb07eaG1-dOpmImVl819Bcjk0vM00",
+        authDomain: "goldgram-decc6.firebaseapp.com",
+        databaseURL: "https://goldgram-decc6-default-rtdb.firebaseio.com",
+        projectId: "goldgram-decc6",
+        storageBucket: "goldgram-decc6.appspot.com",
+        messagingSenderId: "856485966528",
+        appId: "1:856485966528:web:9c0fd540d821a3df5f7325"
+    };
 
-        let username = '';
-        let messages = [];
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        function loadMessages() {
-            const stored = localStorage.getItem('chatMessages');
-            if(stored) messages = JSON.parse(stored);
-            updateChat();
-        }
+    const loginDiv = document.getElementById('login');
+    const loginBtn = document.getElementById('loginBtn');
+    const usernameInput = document.getElementById('username');
 
-        function saveMessages() {
-            localStorage.setItem('chatMessages', JSON.stringify(messages));
-        }
+    const chatContainer = document.getElementById('chatContainer');
+    const chat = document.getElementById('chat');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('send');
 
-        function updateChat() {
-            chat.innerHTML = messages.map(m => {
-                const cls = m.user === username ? 'me' : 'other';
-                return `<div class="${cls}"><b>${m.user}:</b> ${m.text}</div>`;
-            }).join('');
-            chat.scrollTop = chat.scrollHeight;
-        }
+    let username = '';
 
-        loginBtn.addEventListener('click', () => {
-            const name = usernameInput.value.trim();
-            if(name === '') return alert('Введите имя!');
-            username = name;
-            loginDiv.style.display = 'none';
-            chatContainer.style.display = 'flex';
-            loadMessages();
+    function updateChat() {
+        db.ref('messages').on('value', snapshot => {
+            chat.innerHTML = '';
+            const data = snapshot.val();
+            if(data){
+                Object.values(data).forEach(msg => {
+                    const cls = msg.user === username ? 'me' : 'other';
+                    chat.innerHTML += `<div class="${cls}"><b>${msg.user}:</b> ${msg.text}</div>`;
+                });
+                chat.scrollTop = chat.scrollHeight;
+            }
         });
+    }
 
-        sendBtn.addEventListener('click', () => {
-            const text = messageInput.value.trim();
-            if(text === '') return;
-            messages.push({user: username, text: text});
-            saveMessages();
-            updateChat();
-            messageInput.value = '';
-        });
+    loginBtn.addEventListener('click', () => {
+        const name = usernameInput.value.trim();
+        if(name === '') return alert('Введите имя!');
+        username = name;
+        loginDiv.style.display = 'none';
+        chatContainer.style.display = 'block';
+        updateChat();
+    });
 
-        messageInput.addEventListener('keypress', e => {
-            if(e.key === 'Enter') sendBtn.click();
-        });
-    </script>
+    sendBtn.addEventListener('click', () => {
+        const text = messageInput.value.trim();
+        if(text === '') return;
+        const newMsg = db.ref('messages').push();
+        newMsg.set({user: username, text: text});
+        messageInput.value = '';
+    });
+
+    messageInput.addEventListener('keypress', e => {
+        if(e.key === 'Enter') sendBtn.click();
+    });
+</script>
+
 </body>
 </html>
-
-
-
-
-
 
 
